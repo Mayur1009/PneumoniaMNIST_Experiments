@@ -2,7 +2,7 @@ import numpy as np
 from medmnist.dataset import PneumoniaMNIST
 from PySparseCoalescedTsetlinMachineCUDA.tm import MultiClassConvolutionalTsetlinMachine2D
 from sklearn.metrics import accuracy_score, roc_auc_score, precision_recall_fscore_support
-np.random.seed(42)
+np.random.seed(10)
 
 
 def binarize_images(imgs, ch=8):
@@ -76,14 +76,19 @@ def balance(y):
 
 def train(tm: MultiClassConvolutionalTsetlinMachine2D, xtrain, ytrain, xval, yval, xtest, ytest, epochs=1):
     for epoch in range(epochs):
+        # Balance the training data
+        balanced_indices = balance(ytrain)
+        xtrain_bal = xtrain[balanced_indices]
+        ytrain_bal = ytrain[balanced_indices]
+
         # Shuffle training data
-        iota = np.arange(len(ytrain))
+        iota = np.arange(len(ytrain_bal))
         np.random.shuffle(iota)
-        xtrain = xtrain[iota]
-        ytrain = ytrain[iota]
+        xtrain_suf = xtrain_bal[iota]
+        ytrain_suf = ytrain_bal[iota]
 
         # Fit the model
-        tm.fit(xtrain, ytrain, epochs=1, incremental=True)
+        tm.fit(xtrain_suf, ytrain_suf, epochs=1, incremental=True)
 
         # Evaluate Train
         cs_train = tm.score(xtrain)
@@ -119,12 +124,14 @@ if __name__ == "__main__":
 
     # Initialize Tsetlin Machine
     tm = MultiClassConvolutionalTsetlinMachine2D(
-        number_of_clauses=100,
+        number_of_clauses=80,
         T=500,
         s=5,
         dim=(28, 28, ch),
         patch_dim=(10, 10),
         q=1,
+        grid=(16*13, 1, 1),
+        block=(128, 1, 1),
     )
 
     # Train the model

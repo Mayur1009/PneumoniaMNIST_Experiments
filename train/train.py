@@ -66,11 +66,11 @@ def train(tm: MultiClassConvolutionalTsetlinMachine2D, xtrain, ytrain, xval, yva
         # Shuffle training data
         iota = np.arange(len(ytrain))
         np.random.shuffle(iota)
-        xtrain = xtrain[iota]
-        ytrain = ytrain[iota]
+        xtrain_suf = xtrain[iota]
+        ytrain_suf = ytrain[iota]
 
         # Fit the model
-        tm.fit(xtrain, ytrain, epochs=1, incremental=True)
+        tm.fit(xtrain_suf, ytrain_suf, epochs=1, incremental=True)
 
         # Evaluate Train
         cs_train = tm.score(xtrain)
@@ -106,12 +106,14 @@ if __name__ == "__main__":
 
     # Initialize Tsetlin Machine
     tm = MultiClassConvolutionalTsetlinMachine2D(
-        number_of_clauses=100,
-        T=500,
+        number_of_clauses=500,
+        T=10000,
         s=5,
         dim=(28, 28, ch),
         patch_dim=(10, 10),
         q=1,
+        grid=(16*13, 1, 1),
+        block=(128, 1, 1),
     )
 
     # Train the model
