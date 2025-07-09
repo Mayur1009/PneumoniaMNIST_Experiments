@@ -1,0 +1,5 @@
+numpy
+medmnist
+pycuda
+scipy
+git+https://github.com/cair/PySparseCoalescedTsetlinMachineCUDA
